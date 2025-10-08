@@ -283,3 +283,9 @@ furnished to do so, subject to the following conditions:
 - .dockerignore added  
 - LICENSE added  
 - Optional CI/CD workflow ready  
+
+
+# 📢 Stay Connected!  
+💻 **GitHub Repository:** [Evgenii Matveev](https://github.com/evgeniimatveev)  
+🌐 **Portfolio:** [Data Science Portfolio](https://www.datascienceportfol.io/evgeniimatveevusa)  
+📌 **LinkedIn:** [Evgenii Matveev](https://www.linkedin.com/in/evgenii-matveev-510926276/)  
