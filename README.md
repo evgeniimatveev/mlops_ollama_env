@@ -17,7 +17,7 @@ Runs with one command via **Docker Compose**.
 - **Docker / Compose** — reproducible environment  
 - **dotenv** — config via `.env`  
 - **pytest** — optional tests (if you add them)  
-- **GitHub Actions** — optional CI/CD for container images
+- **GitHub Actions** — optional CI/CD for container images  
 
 ---
 
@@ -27,7 +27,7 @@ Runs with one command via **Docker Compose**.
 - `GET /stream` — token streaming (text/plain)  
 - `GET /playground` — minimal web UI  
 - `GET /health` — connectivity check  
-- (Optional) `GET /warmup?model=phi3:mini` — preload/keep model warm
+- (Optional) `GET /warmup?model=phi3:mini` — preload/keep model warm  
 
 ---
 
@@ -43,7 +43,6 @@ Runs with one command via **Docker Compose**.
 ├── docker-compose.yml
 ├── requirements.txt
 └── README.md
-
 ```
 
 ---
@@ -65,6 +64,7 @@ ALLOWED_MODELS=phi3:mini,qwen2.5-coder:7b,llama3.1:latest,deepseek-r1:7b
 READ_TIMEOUT=300
 OLLAMA_KEEP_ALIVE=30m
 ```
+
 ---
 
 ## 🚀 Quick Start
@@ -77,23 +77,26 @@ Start Ollama and pull at least one model:
 ollama serve
 ollama pull phi3:mini
 ```
+
 Then build and run:
 
+```bash
 docker compose up -d --build
-
+```
 
 Access endpoints:
 
-🎨 Playground → http://127.0.0.1:8000/playground
+- 🎨 Playground → http://127.0.0.1:8000/playground  
+- 📘 Docs → http://127.0.0.1:8000/docs  
+- 💚 Health → http://127.0.0.1:8000/health  
 
-📘 Docs → http://127.0.0.1:8000/docs
+---
 
-💚 Health → http://127.0.0.1:8000/health
-
-🐳 B) Self-contained (Compose Runs Ollama Too)
+### 🐳 B) Self-contained (Compose Runs Ollama Too)
 
 If you want both Ollama + API in Docker:
 
+```yaml
 version: "3.9"
 services:
   ollama:
@@ -118,23 +121,30 @@ services:
 
 volumes:
   ollama_data:
-
+```
 
 Run everything:
 
+```bash
 docker compose up -d --build
+```
 
-🔌 Endpoints (Cheat Sheet)
-Method	Endpoint	Description
-GET	/models	List available models
-GET / POST	/chat	Generate completions
-GET	/stream	Stream tokens in real-time
-GET	/playground	Web UI
-GET	/health	Health check
-GET	/warmup?model=phi3:mini	Warm up model
+---
 
-Example JSON for /chat:
+### 🔌 Endpoints (Cheat Sheet)
 
+| Method | Endpoint | Description |
+|--------|-----------|--------------|
+| GET | `/models` | List available models |
+| GET / POST | `/chat` | Generate completions |
+| GET | `/stream` | Stream tokens in real-time |
+| GET | `/playground` | Web UI |
+| GET | `/health` | Health check |
+| GET | `/warmup?model=phi3:mini` | Warm up model |
+
+Example JSON for `/chat`:
+
+```json
 {
   "prompt": "hello",
   "model": "phi3:mini",
@@ -142,43 +152,53 @@ Example JSON for /chat:
   "top_p": 0.9,
   "max_tokens": 256
 }
+```
 
-⚡ Performance Tips
+---
 
-Use /stream for faster perceived responses
+### ⚡ Performance Tips
+- Use `/stream` for faster perceived responses  
+- Warm up models with `GET /warmup?model=phi3:mini`  
+- Lightweight models (`phi3:mini`, `qwen2.5-coder:7b`) respond faster  
 
-Warm up models with GET /warmup?model=phi3:mini
+---
 
-Lightweight models (phi3:mini, qwen2.5-coder:7b) respond faster
+### 🧰 Troubleshooting
 
-🧰 Troubleshooting
+**502 from /health — verify OLLAMA_URL:**
 
-502 from /health — verify OLLAMA_URL:
-
+```bash
 curl http://<host>:11434/api/tags
+```
 
+**Linux host fix:**
 
-Linux host fix:
+Add in `docker-compose.yml`:
 
-Add in docker-compose.yml:
-
+```yaml
 extra_hosts:
   - "host.docker.internal:host-gateway"
-
+```
 
 Then keep:
 
+```env
 OLLAMA_URL=http://host.docker.internal:11434
+```
 
+**No models listed?** — run:
 
-No models listed? — run:
-
+```bash
 ollama pull phi3:mini
+```
 
-🔁 CI/CD (Optional: GitHub Container Registry)
+---
 
-Create .github/workflows/docker.yml:
+### 🔁 CI/CD (Optional: GitHub Container Registry)
 
+Create `.github/workflows/docker.yml`:
+
+```yaml
 name: Docker CI/CD
 on:
   push:
@@ -214,14 +234,20 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
+```
 
 Image examples:
 
-ghcr.io/<owner>/<repo>:main
+```
+ghcr.io/<owner>/<repo>:main  
 ghcr.io/<owner>/<repo>:sha-...
+```
 
-🧾 .dockerignore
+---
+
+### 🧾 .dockerignore
+
+```
 __pycache__/
 *.pyc
 *.log
@@ -230,28 +256,30 @@ __pycache__/
 .git
 .gitignore
 tests/
+```
 
-🪪 License (MIT)
-MIT License
+---
 
-Copyright (c) 2025 Evgenii Matveev
+### 🪪 License (MIT)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+MIT License  
+
+Copyright (c) 2025 Evgenii Matveev  
+
+Permission is hereby granted, free of charge, to any person obtaining a copy  
+of this software and associated documentation files (the "Software"), to deal  
+in the Software without restriction, including without limitation the rights  
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell  
+copies of the Software, and to permit persons to whom the Software is  
+furnished to do so, subject to the following conditions:  
+
 [standard MIT text continues...]
 
-✅ Quick Push Checklist
+---
 
- README.md complete
-
- .env.example included
-
- .dockerignore added
-
- LICENSE added
-
- Optional CI/CD workflow ready
+### ✅ Quick Push Checklist
+- README.md complete  
+- .env.example included  
+- .dockerignore added  
+- LICENSE added  
+- Optional CI/CD workflow ready  
