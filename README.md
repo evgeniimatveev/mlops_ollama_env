@@ -65,19 +65,23 @@ ALLOWED_MODELS=phi3:mini,qwen2.5-coder:7b,llama3.1:latest,deepseek-r1:7b
 READ_TIMEOUT=300
 OLLAMA_KEEP_ALIVE=30m
 ```
-🚀 Quick Start
-🧩 A) Using Your Host’s Ollama
+---
+
+## 🚀 Quick Start
+
+### 🧩 A) Using Your Host’s Ollama
+
 Start Ollama and pull at least one model:
 
-bash
-Copy code
+```bash
 ollama serve
 ollama pull phi3:mini
+```
 Then build and run:
 
-bash
-Copy code
 docker compose up -d --build
+
+
 Access endpoints:
 
 🎨 Playground → http://127.0.0.1:8000/playground
@@ -87,10 +91,9 @@ Access endpoints:
 💚 Health → http://127.0.0.1:8000/health
 
 🐳 B) Self-contained (Compose Runs Ollama Too)
+
 If you want both Ollama + API in Docker:
 
-yaml
-Copy code
 version: "3.9"
 services:
   ollama:
@@ -115,11 +118,12 @@ services:
 
 volumes:
   ollama_data:
+
+
 Run everything:
 
-bash
-Copy code
 docker compose up -d --build
+
 🔌 Endpoints (Cheat Sheet)
 Method	Endpoint	Description
 GET	/models	List available models
@@ -131,8 +135,6 @@ GET	/warmup?model=phi3:mini	Warm up model
 
 Example JSON for /chat:
 
-json
-Copy code
 {
   "prompt": "hello",
   "model": "phi3:mini",
@@ -140,42 +142,43 @@ Copy code
   "top_p": 0.9,
   "max_tokens": 256
 }
+
 ⚡ Performance Tips
+
 Use /stream for faster perceived responses
 
 Warm up models with GET /warmup?model=phi3:mini
 
-Lightweight models respond faster
+Lightweight models (phi3:mini, qwen2.5-coder:7b) respond faster
 
 🧰 Troubleshooting
+
 502 from /health — verify OLLAMA_URL:
 
-bash
-Copy code
 curl http://<host>:11434/api/tags
+
+
 Linux host fix:
+
 Add in docker-compose.yml:
 
-yaml
-Copy code
 extra_hosts:
   - "host.docker.internal:host-gateway"
+
+
 Then keep:
 
-env
-Copy code
 OLLAMA_URL=http://host.docker.internal:11434
-No models listed?
-Run:
 
-bash
-Copy code
+
+No models listed? — run:
+
 ollama pull phi3:mini
-🔁 CI/CD (Optional)
-.github/workflows/docker.yml
 
-yaml
-Copy code
+🔁 CI/CD (Optional: GitHub Container Registry)
+
+Create .github/workflows/docker.yml:
+
 name: Docker CI/CD
 on:
   push:
@@ -211,9 +214,14 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+
+Image examples:
+
+ghcr.io/<owner>/<repo>:main
+ghcr.io/<owner>/<repo>:sha-...
+
 🧾 .dockerignore
-gitignore
-Copy code
 __pycache__/
 *.pyc
 *.log
@@ -222,12 +230,12 @@ __pycache__/
 .git
 .gitignore
 tests/
+
 🪪 License (MIT)
-vbnet
-Copy code
 MIT License
 
 Copyright (c) 2025 Evgenii Matveev
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -235,7 +243,9 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 [standard MIT text continues...]
+
 ✅ Quick Push Checklist
+
  README.md complete
 
  .env.example included
@@ -245,6 +255,3 @@ furnished to do so, subject to the following conditions:
  LICENSE added
 
  Optional CI/CD workflow ready
-
-
-
