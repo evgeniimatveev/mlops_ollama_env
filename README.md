@@ -43,6 +43,9 @@ Runs with one command via **Docker Compose**.
 ├── docker-compose.yml
 ├── requirements.txt
 └── README.md
+
+```
+
 ⚙️ Environment
 Copy .env.example → .env and adjust as needed.
 
