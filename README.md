@@ -50,10 +50,10 @@ Runs with one command via **Docker Compose**.
 
 Copy .env.example → .env and adjust as needed.
 
-# If Ollama runs on the host (Windows/macOS):
+# If Ollama runs on the host (Windows/macOS)
 OLLAMA_URL=http://host.docker.internal:11434
 
-# Linux: either add extra_hosts in compose or use the docker bridge IP (e.g.):
+# Linux: either add extra_hosts in compose or use the docker bridge IP
 # OLLAMA_URL=http://172.17.0.1:11434
 
 DEFAULT_MODEL=phi3:mini
@@ -64,7 +64,7 @@ READ_TIMEOUT=300
 OLLAMA_KEEP_ALIVE=30m
 
 🚀 Quick Start
-A) Using Your Host’s Ollama
+🧩 A) Using Your Host’s Ollama
 
 Start Ollama and pull at least one model:
 
@@ -85,9 +85,9 @@ Access endpoints:
 
 💚 Health → http://127.0.0.1:8000/health
 
-B) Self-contained (Compose Runs Ollama Too)
+🐳 B) Self-contained (Compose Runs Ollama Too)
 
-Use this version of docker-compose.yml:
+If you want both Ollama + API in Docker:
 
 version: "3.9"
 services:
@@ -115,17 +115,17 @@ volumes:
   ollama_data:
 
 
-Then run:
+Run everything:
 
 docker compose up -d --build
 
 🔌 Endpoints (Cheat Sheet)
 Method	Endpoint	Description
 GET	/models	List available models
-GET / POST	/chat	Generate text
-GET	/stream	Stream responses
-GET	/playground	UI
-GET	/health	Status check
+GET / POST	/chat	Generate completions
+GET	/stream	Stream tokens in real-time
+GET	/playground	UI interface
+GET	/health	Health check
 GET	/warmup?model=phi3:mini	Warm up model
 
 Example JSON for /chat:
@@ -138,75 +138,37 @@ Example JSON for /chat:
   "max_tokens": 256
 }
 
-🐳 Docker Setup
-Standard Compose (Uses Host Ollama)
-version: "3.9"
-services:
-  ollama_api:
-    build: .
-    container_name: ollama_api
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    restart: unless-stopped
-
-Compose with Ollama Service (Self-contained)
-version: "3.9"
-services:
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    restart: unless-stopped
-
-  ollama_api:
-    build: .
-    container_name: ollama_api
-    ports:
-      - "8000:8000"
-    environment:
-      - OLLAMA_URL=http://ollama:11434
-    depends_on:
-      - ollama
-    restart: unless-stopped
-
-volumes:
-  ollama_data:
-
 ⚡ Performance Tips
 
-Use /stream for faster perceived output
+Use /stream for faster perceived responses.
 
-Warm up models via GET /warmup?model=phi3:mini
+Warm up models with GET /warmup?model=phi3:mini.
 
-Lightweight models (phi3:mini, qwen2.5-coder:7b) run faster than large ones
+Lightweight models (phi3:mini, qwen2.5-coder:7b) respond faster.
 
 🧰 Troubleshooting
 
-502 from /health — Check if OLLAMA_URL is reachable:
+502 from /health — verify OLLAMA_URL:
 
 curl http://<host>:11434/api/tags
 
 
-Linux fix — Add to docker-compose.yml:
+Linux host fix:
+Add in docker-compose.yml:
 
 extra_hosts:
   - "host.docker.internal:host-gateway"
 
 
-Keep OLLAMA_URL=http://host.docker.internal:11434.
+and keep OLLAMA_URL=http://host.docker.internal:11434.
 
-No models listed? → Run:
+No models listed? — run:
 
 ollama pull phi3:mini
 
-🔁 CI/CD (GitHub Container Registry)
+🔁 CI/CD (Optional: GitHub Container Registry)
 
-.github/workflows/docker.yml:
+.github/workflows/docker.yml
 
 name: Docker CI/CD
 on:
@@ -245,7 +207,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
 
-Resulting image:
+Image examples:
 
 ghcr.io/<owner>/<repo>:main
 ghcr.io/<owner>/<repo>:sha-...
@@ -260,7 +222,7 @@ __pycache__/
 .gitignore
 tests/
 
-🪪 LICENSE (MIT)
+🪪 License (MIT)
 MIT License
 
 Copyright (c) 2025 Evgenii Matveev
@@ -275,32 +237,21 @@ furnished to do so, subject to the following conditions:
 
 ✅ Quick Push Checklist
 
- README.md added
+ README.md complete
 
- .env.example included (real .env excluded)
+ .env.example included
 
- .dockerignore present
+ .dockerignore added
 
- (optional) LICENSE added
+ (optional) LICENSE
 
- (optional) .github/workflows/docker.yml for CI/CD
+ (optional) .github/workflows/docker.yml
 
-👤 Author
+📢 Stay Connected
 
-Evgenii Matveev
-🌐 GitHub
+💻 GitHub: Evgenii Matveev
 
-💼 LinkedIn
+🌐 Portfolio: Data Science Portfolio
 
-📊 Portfolio
+📌 LinkedIn: Evgenii Matveev
 
-
----
-
-✅ Everything is in **one clean file**: README + `.env.example` + `.dockerignore` + MIT License + CI/CD + checklist.  
-Perfect for a professional GitHub release.
-
-Would you like me to add a **preview image** block at the top (like a screenshot of your playground UI)? It’ll make the repo look even more polished.
-
-You said:
-# 🧠 FastAPI + Ollama Playground — Dockerized LLM Inference
