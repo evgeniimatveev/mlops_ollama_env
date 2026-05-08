@@ -9,6 +9,21 @@ Runs with one command via **Docker Compose**.
 
 ---
 
+ ## What This Project Does
+
+  Dockerized **local LLM inference playground** — one `docker compose up` gives you a streaming chat API, web UI with
+  model selector, and support for any Ollama-compatible model (phi3, llama3, qwen2.5-coder, deepseek-r1).
+
+  **What makes it stand out:** fully self-contained setup — no cloud dependency, no API keys, no data leaving your
+  machine.
+
+  **Pipeline:** `Ollama (local LLM) → FastAPI → Docker Compose → Web Playground`
+
+  ![License](https://img.shields.io/badge/License-MIT-green.svg)
+
+
+---
+
 ## 📦 Tech Stack
 - **FastAPI + Uvicorn** — API & simple HTML playground  
 - **Ollama** — local LLMs (phi3, qwen2.5-coder, llama3, deepseek-r1, …)  
@@ -207,12 +222,7 @@ tests/
 ```
 ---
 
-### ✅ Quick Push Checklist
-- README.md complete  
-- .env.example included  
-- .dockerignore added  
-- LICENSE added  
-- Optional CI/CD workflow ready  
+
 
 
 # 📢 Stay Connected!  
