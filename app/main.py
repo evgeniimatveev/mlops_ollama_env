@@ -38,6 +38,7 @@ class ChatIn(BaseModel):
     temperature: Optional[float] = 0.7
     top_p: Optional[float] = 0.9
     max_tokens: Optional[int] = 512  # Ollama uses "num_predict"
+    think: Optional[bool] = False  # qwen3 chain-of-thought toggle; ignored by non-thinking models
 
 @app.get("/")
 def root():
@@ -72,8 +73,9 @@ def chat_get(
     temperature: float = 0.7,
     top_p: float = 0.9,
     max_tokens: int = 512,
+    think: bool = False,
 ):
-    return _chat_full(prompt, model, temperature, top_p, max_tokens)
+    return _chat_full(prompt, model, temperature, top_p, max_tokens, think)
 
 @app.post("/chat")
 def chat_post(body: ChatIn):
@@ -83,6 +85,7 @@ def chat_post(body: ChatIn):
         body.temperature or 0.7,
         body.top_p or 0.9,
         body.max_tokens or 512,
+        bool(body.think),
     )
 
 @app.get("/stream")
@@ -92,22 +95,25 @@ def stream_get(
     temperature: float = 0.7,
     top_p: float = 0.9,
     max_tokens: int = 512,
+    think: bool = False,
 ):
-    gen = _chat_stream(prompt, model, temperature, top_p, max_tokens)
+    gen = _chat_stream(prompt, model, temperature, top_p, max_tokens, think)
     return StreamingResponse(gen, media_type="text/plain")
 
-def _make_payload(prompt: str, model: str, temperature: float, top_p: float, max_tokens: int):
+def _make_payload(prompt: str, model: str, temperature: float, top_p: float, max_tokens: int, think: bool = False):
     # Ollama options map (num_predict = max_tokens)
     options = {
         "temperature": float(temperature),
         "top_p": float(top_p),
         "num_predict": int(max_tokens),
     }
-    return {"model": model, "prompt": prompt, "options": options}
+    # "think" is a top-level field (not under options) — only thinking-capable
+    # models (e.g. qwen3) act on it, others ignore it.
+    return {"model": model, "prompt": prompt, "options": options, "think": bool(think)}
 
-def _chat_full(prompt: str, model: str, temperature: float, top_p: float, max_tokens: int):
+def _chat_full(prompt: str, model: str, temperature: float, top_p: float, max_tokens: int, think: bool = False):
     try:
-        payload = _make_payload(prompt, model, temperature, top_p, max_tokens)
+        payload = _make_payload(prompt, model, temperature, top_p, max_tokens, think)
         with requests.post(
             f"{OLLAMA_URL}/api/generate",
             json=payload,
@@ -131,6 +137,7 @@ def _chat_full(prompt: str, model: str, temperature: float, top_p: float, max_to
             "temperature": temperature,
             "top_p": top_p,
             "max_tokens": max_tokens,
+            "think": think,
             "response": "".join(chunks),
         }
     except requests.Timeout:
@@ -139,10 +146,10 @@ def _chat_full(prompt: str, model: str, temperature: float, top_p: float, max_to
         raise HTTPException(status_code=502, detail=f"Ollama error: {e}")
 
 def _chat_stream(
-    prompt: str, model: str, temperature: float, top_p: float, max_tokens: int
+    prompt: str, model: str, temperature: float, top_p: float, max_tokens: int, think: bool = False
 ) -> Generator[str, None, None]:
     try:
-        payload = _make_payload(prompt, model, temperature, top_p, max_tokens)
+        payload = _make_payload(prompt, model, temperature, top_p, max_tokens, think)
         with requests.post(
             f"{OLLAMA_URL}/api/generate",
             json=payload,
@@ -181,6 +188,8 @@ def playground():
     button { margin-right: 8px; margin-top: 6px; }
     .row { margin: 12px 0; }
     .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .checkbox-row { display: flex; align-items: center; gap: 8px; }
+    .checkbox-row input { width: auto; }
   </style>
 </head>
 <body>
@@ -204,6 +213,11 @@ def playground():
   <div class="row">
     <label>Max tokens</label>
     <input id="max_tokens" type="number" min="1" max="4096" value="512" />
+  </div>
+
+  <div class="row checkbox-row">
+    <input id="think" type="checkbox" />
+    <label for="think" style="width:auto;">Think (chain-of-thought — qwen3 only, slower)</label>
   </div>
 
   <div class="row">
@@ -255,6 +269,7 @@ function uiParams(){
     temperature: parseFloat(document.getElementById('temperature').value || '0.7'),
     top_p: parseFloat(document.getElementById('top_p').value || '0.9'),
     max_tokens: parseInt(document.getElementById('max_tokens').value || '512'),
+    think: document.getElementById('think').checked,
   };
 }
 
@@ -288,6 +303,7 @@ async function stream(){
         temperature: String(p.temperature),
         top_p: String(p.top_p),
         max_tokens: String(p.max_tokens),
+        think: String(p.think),
       }).toString();
   const res = await fetch(url);
   if(!res.ok){
