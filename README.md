@@ -12,7 +12,7 @@ Runs with one command via **Docker Compose**.
  ## What This Project Does
 
   Dockerized **local LLM inference playground** — one `docker compose up` gives you a streaming chat API, web UI with
-  model selector, and support for any Ollama-compatible model (phi3, llama3, qwen2.5-coder, deepseek-r1).
+  model selector, and support for any Ollama-compatible model (phi3, llama3, qwen2.5-coder, qwen3, deepseek-r1).
 
   **What makes it stand out:** fully self-contained setup — no cloud dependency, no API keys, no data leaving your
   machine.
@@ -26,7 +26,7 @@ Runs with one command via **Docker Compose**.
 
 ## 📦 Tech Stack
 - **FastAPI + Uvicorn** — API & simple HTML playground  
-- **Ollama** — local LLMs (phi3, qwen2.5-coder, llama3, deepseek-r1, …)  
+- **Ollama** — local LLMs (phi3, qwen2.5-coder, qwen3, llama3, deepseek-r1, …)  
 - **Docker / Compose** — reproducible environment  
 - **dotenv** — config via `.env`  
 - **pytest** — optional tests (if you add them)  
@@ -71,7 +71,7 @@ OLLAMA_URL=http://host.docker.internal:11434
 # OLLAMA_URL=http://172.17.0.1:11434
 
 DEFAULT_MODEL=phi3:mini
-ALLOWED_MODELS=phi3:mini,qwen2.5-coder:7b,llama3.1:latest,deepseek-r1:7b
+ALLOWED_MODELS=phi3:mini,qwen2.5-coder:7b,llama3.1:latest,deepseek-r1:7b,qwen3:8b
 
 # Optional tuning
 READ_TIMEOUT=300
@@ -173,6 +173,7 @@ Example JSON for `/chat`:
 - Use `/stream` for faster perceived responses  
 - Warm up models with `GET /warmup?model=phi3:mini`  
 - Lightweight models (`phi3:mini`, `qwen2.5-coder:7b`) respond faster  
+- `qwen3:8b` is heavier — expect noticeably slower CPU inference, but stronger reasoning/agentic tool-calling  
 
 ---
 
