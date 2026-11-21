@@ -29,8 +29,8 @@ Runs with one command via **Docker Compose**.
 - **Ollama** — local LLMs (phi3, qwen2.5-coder, qwen3, llama3, deepseek-r1, …)  
 - **Docker / Compose** — reproducible environment  
 - **dotenv** — config via `.env`  
-- **pytest** — optional tests (if you add them)  
-- **GitHub Actions** — optional CI/CD for container images  
+- **pytest** — API tests with a fake Ollama (`tests/`, no model needed)  
+- **GitHub Actions** — tests on every push, Docker smoke test on demand  
 
 ---
 
@@ -40,7 +40,21 @@ Runs with one command via **Docker Compose**.
 - `GET /stream` — token streaming (text/plain)  
 - `GET /playground` — minimal web UI  
 - `GET /health` — connectivity check  
-- (Optional) `GET /warmup?model=phi3:mini` — preload/keep model warm  
+
+---
+
+## ✅ Tests & CI
+
+```bash
+uv run --no-project --with-requirements requirements-dev.txt python -m pytest -q
+```
+
+17 tests cover every endpoint with a **fake Ollama** (default parameters, the `max_tokens` → `num_predict` mapping, streaming, timeouts, error codes), so they run in about two seconds without a model.
+
+| Workflow | When | What it does |
+|----------|------|--------------|
+| [`tests.yml`](.github/workflows/tests.yml) | every push and pull request | runs the tests |
+| [`docker-run.yml`](.github/workflows/docker-run.yml) | **manual**: Actions → *Docker smoke test (manual)* | builds the image, starts it with Compose and checks `/`, `/playground`, `/docs` and that `/health` answers 502 cleanly when Ollama is not there |
 
 ---
 
@@ -50,11 +64,15 @@ Runs with one command via **Docker Compose**.
 ├── app/
 │   ├── __init__.py
 │   └── main.py
+├── tests/
+│   └── test_api.py     # API tests with a fake Ollama
+├── .github/workflows/  # CI
 ├── .env                # local (do NOT commit)
 ├── .env.example        # template to share
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
+├── requirements-dev.txt
 └── README.md
 ```
 
@@ -62,6 +80,8 @@ Runs with one command via **Docker Compose**.
 
 ## ⚙️ Environment Setup
 Copy `.env.example` → `.env` and adjust as needed.
+
+> Today the app reads only `OLLAMA_URL`. `DEFAULT_MODEL`, `ALLOWED_MODELS`, `READ_TIMEOUT` and `OLLAMA_KEEP_ALIVE` are placeholders for planned settings and have no effect yet.
 
 ```env
 # If Ollama runs on the host (Windows/macOS)
@@ -153,7 +173,6 @@ docker compose up -d --build
 | GET | `/stream` | Stream tokens in real-time |
 | GET | `/playground` | Web UI |
 | GET | `/health` | Health check |
-| GET | `/warmup?model=phi3:mini` | Warm up model |
 
 Example JSON for `/chat`:
 
@@ -171,7 +190,7 @@ Example JSON for `/chat`:
 
 ### ⚡ Performance Tips
 - Use `/stream` for faster perceived responses  
-- Warm up models with `GET /warmup?model=phi3:mini`  
+- Warm a model up by sending one short prompt first (a dedicated `/warmup` endpoint is not implemented yet)  
 - Lightweight models (`phi3:mini`, `qwen2.5-coder:7b`) respond faster  
 - `qwen3:8b` is heavier — expect noticeably slower CPU inference, but stronger reasoning/agentic tool-calling  
 
