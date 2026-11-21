@@ -1,0 +1,40 @@
+name: Docker smoke test (manual)
+
+# Manual only: click "Run workflow" in the Actions tab. No push / PR / schedule triggers.
+# Builds the image, starts it with Docker Compose and talks to it over HTTP.
+# There is no Ollama in CI, so /health must fail in a clean, documented way (502 with ok=false).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Compose file is valid
+        run: |
+          cp .env.example .env
+          docker compose config -q
+      - name: Build and start
+        run: docker compose up -d --build
+      - name: Wait for the API
+        run: |
+          for i in $(seq 1 30); do curl -fs http://localhost:8000/ > /dev/null && exit 0; sleep 2; done
+          docker compose logs; exit 1
+      - name: Endpoints answer
+        run: |
+          set -e
+          curl -fs http://localhost:8000/ | grep -q running
+          curl -fs http://localhost:8000/playground | grep -q 'id="model"'
+          curl -fs http://localhost:8000/docs > /dev/null
+          code=$(curl -s -o /tmp/health.json -w '%{http_code}' http://localhost:8000/health)
+          cat /tmp/health.json; echo
+          test "$code" = "502"
+          grep -q '"ok":false' /tmp/health.json
+      - name: Logs
+        if: always()
+        run: docker compose logs --no-color | tail -30
