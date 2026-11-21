@@ -5,8 +5,6 @@ name: Docker smoke test (manual)
 # There is no Ollama in CI, so /health must fail in a clean, documented way (502 with ok=false).
 on:
   workflow_dispatch:
-  push:
-    branches: [ci/tests-and-checks]   # TEMPORARY: to test before merge
 
 permissions:
   contents: read
